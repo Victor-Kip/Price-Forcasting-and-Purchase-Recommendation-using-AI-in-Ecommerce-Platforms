@@ -84,4 +84,55 @@ input[type=text] {
   border: 1px solid #555;
   border-radius: 4px;
   margin-right: 0.5rem;
+}
+
+.register {
+  max-width: 400px;
+  margin: 4rem auto;
+  background: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+.register h2 {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+  color: #2c3e50;
+}
+.register p {
+  color: #666;
+  margin-bottom: 1rem;
+}
+.register img {
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
+  margin-bottom: 1rem;
+}
+.register form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.register input[type=email],
+.register input[type=password] {
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  width: 100%;
+  transition: border 0.2s;
+}
+.register input[type=email]:focus,
+.register input[type=password]:focus {
+  border-color: #0077cc;
+  outline: none;
+}
+.register p i {
+  font-size: 0.85rem;
+  color: #999;
+  display: block;
+  text-align: left;
+  margin-top: -0.5rem;
 }/*# sourceMappingURL=styles.css.map */

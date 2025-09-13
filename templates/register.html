@@ -1,0 +1,17 @@
+{% extends "base.html"%}
+{%block head %}
+{% endblock %}
+{% block body %}
+<div class = "register">
+    <h2>Create your account below</h2>
+    <p>You will use this to log in across devices</p>
+    <img src="{{ url_for('static', filename='google.svg') }}" alt="Google logo">
+    <form action = "/register" method = "post">
+        <input type = "email" name = "email" id = "email" placeholder="Enter your email"/>
+        <input type = "password" name = "password" id = "password" placeholder="password"/>
+        <p><i>minimum 8 characters</i></p>
+        <input type = "password" name = "confirm_password" id = "confirm_password" placeholder="confirm password"/>
+        <input type = "submit" value = "Sign up with your email"
+    </form>
+</div>
+{% endblock%}
