@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block head %}
+<title>GenEcomm</title>
+{% endblock %}
+{% block body %}
+<div class="container">
+<h1>GenEcomm</h1>
+<nav>
+    <a href="/">Home</a>
+    <a href="/search">Search</a>
+    <a href="/forecasts">Forecasts</a>
+    <a href="/recommendations">Recommendations</a>
+    <a href="/login" style="margin-left: 2rem;">Login</a>
+    <button onclick="window.location.href='/create_account'">Create Account</button>
+</nav>
+</div>
+<div class="content">
+<h2>Smarter Shopping, </h2>
+<h2>Smarter Decisions. <h2>
+<p>Discover future prices and personalized recommendations in seconds - a simple tool that transforms how you plan your purchases.</p>
+<form action = "" method = "">
+    <input type = "text" name = "search_input" id = "search_input" placeholder="search for a product..."/>
+    <input type = "submit" value = "Search"/>
+</form>
+<button onclick="window.location.href='/create_account'">Get Started</button>
+</div>
+{% endblock %}
