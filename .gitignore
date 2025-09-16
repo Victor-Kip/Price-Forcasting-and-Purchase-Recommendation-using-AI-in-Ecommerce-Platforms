@@ -1,2 +1,5 @@
 styles.css.map
 styles.scss
+instance
+__pycache__/
+*.pyc
