@@ -11,7 +11,14 @@
         <input type = "password" name = "password" id = "password" placeholder="password"/>
         <p><i>minimum 8 characters</i></p>
         <input type = "password" name = "confirm_password" id = "confirm_password" placeholder="confirm password"/>
-        <input type = "submit" value = "Sign up with your email"
+        <input type = "submit" value = "Sign up with your email">
     </form>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, msg in messages %}
+      <div class="alert alert-{{ category }}">{{ msg }}</div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
 </div>
 {% endblock%}
