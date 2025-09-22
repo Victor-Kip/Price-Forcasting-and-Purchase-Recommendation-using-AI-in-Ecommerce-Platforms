@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block head %}
+{% endblock %}
+{% block body %}
+<div class = "container">
+    <h1>GenEcomm</h1>
+    <p>New User?<a href = "/register"><i> create account</i></a></p>
+</div>
+<div class = "login">
+    <h2>Welcome Back</h2>
+    <p>Log in with your registered email</p>
+    <form action = "/login" method = "post">
+    <label for="Email">Email</label>
+    <input type = "email" name = "email" id = "email"/>
+    <label for = "password">Password</label>
+    <input type = "password" name = "password" id = "password"/>
+    <p><i>Forgot Password?</i></p>
+    <input type = "submit" value = "Login"/>
+    <p style="justify-content: center;">OR</p>
+    <div style="display: flex; justify-content: center;">
+        <img src="{{ url_for('static', filename='google.svg') }}" alt="Google logo">
+        <a href = "{{url_for('google_login')}}"style = "padding-left: 1rem;">Login with Google</a>
+    </div>
+    </form>
+</div>
+{% endblock %}
