@@ -67,6 +67,9 @@ def register():
         email = request.form["email"]
         password = request.form["password"]
         confirm_password = request.form["confirm_password"]
+        if len(password) < 8:
+            flash("Password is too short", "danger")
+            return redirect(url_for("register"))
         if(password == confirm_password):
             user = User.query.filter_by(email = email).first()
             if user:
@@ -79,6 +82,7 @@ def register():
                 db.session.commit()
                 send_verification_email(email)
                 flash("Account created successfully! Please log in.", "success")
+                return redirect(url_for("login")) 
         else:
             flash("Passwords don't match!", "danger")
             return redirect(url_for("register"))          
