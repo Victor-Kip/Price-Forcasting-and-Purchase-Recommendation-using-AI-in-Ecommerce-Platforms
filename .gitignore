@@ -4,3 +4,5 @@ instance
 __pycache__/
 *.pyc
 api_key.py
+routes/__pycache__/
+utils/__pycache__/
