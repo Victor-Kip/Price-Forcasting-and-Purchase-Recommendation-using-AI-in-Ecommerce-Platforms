@@ -88,6 +88,18 @@ def register():
             return redirect(url_for("register"))          
     return render_template("register.html")
 
+#password reset
+@app.route("/resetpassword",methods = ["GET","POST"])
+def reset_password_request():
+    if request.method == "POST":
+        email = request.form["email"]
+        user = User.query.filter_by(email = email).first()
+        if user:
+            send_verification_email(user)
+            flash("If your email exists in our system, you’ll get a reset link.", "info")
+        return redirect(url_for("login"))
+    return render_template("resetpassword.html")
+
 # route to login page and process login request
 @app.route("/login",methods = ["GET","POST"])
 def login():
