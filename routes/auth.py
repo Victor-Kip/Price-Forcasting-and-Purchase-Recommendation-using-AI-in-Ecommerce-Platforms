@@ -64,6 +64,7 @@ def logout():
 # Email verification
 @auth_bp.route("/verify/<token>")
 def verify_email(token):
+    action = request.args.get("action")
     try:
         email = confirm_token(token)
     except Exception:
@@ -72,9 +73,12 @@ def verify_email(token):
 
     user = User.query.filter_by(email=email).first()
     if user:
-        session["email"] = email
-        flash("Email verified successfully!", "success")
-        return redirect(url_for("main.dashboard"))
-
+        if action == "register":
+            session["email"] = email
+            flash("Email verified successfully!", "success")
+            return redirect(url_for("main.dashboard"))
+        elif action == "reset":
+            session["email"] = email
+            return redirect(url_for("reset.reset_password"))
     flash("Verification failed.", "danger")
     return redirect(url_for("auth.login"))

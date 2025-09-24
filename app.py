@@ -11,7 +11,7 @@ def create_app():
     mail.init_app(app)
     oauth.init_app(app)
 
-    # register blueprints reee
+    # register blueprints 
     from routes.auth import auth_bp
     from routes.reset import reset_bp
     from routes.oauth import oauth_bp
