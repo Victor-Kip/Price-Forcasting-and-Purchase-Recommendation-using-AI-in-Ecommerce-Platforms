@@ -4,7 +4,7 @@
 {% block body %}
 <div class = "container">
     <h1>GenEcomm</h1>
-    <p>New User?<a href = "/register"><i> create account</i></a></p>
+    <p>New User?<a href = "/auth/register"><i> create account</i></a></p>
 </div>
 <div class = "login">
     <h2>Welcome Back</h2>
@@ -22,5 +22,14 @@
         <a href = "{{url_for('oauth.google_login')}}"style = "padding-left: 1rem;">Login with Google</a>
     </div>
     </form>
+</div>
+<div>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, msg in messages %}
+      <div class="alert alert-{{ category }}">{{ msg }}</div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
 </div>
 {% endblock %}
