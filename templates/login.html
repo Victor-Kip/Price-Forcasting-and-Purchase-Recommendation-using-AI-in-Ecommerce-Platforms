@@ -4,23 +4,32 @@
 {% block body %}
 <div class = "container">
     <h1>GenEcomm</h1>
-    <p>New User?<a href = "/register"><i> create account</i></a></p>
+    <p>New User?<a href = "/auth/register"><i> create account</i></a></p>
 </div>
 <div class = "login">
     <h2>Welcome Back</h2>
     <p>Log in with your registered email</p>
-    <form action = "/login" method = "post">
+    <form action = "/auth/login" method = "post">
     <label for="Email">Email</label>
     <input type = "email" name = "email" id = "email"/>
     <label for = "password">Password</label>
     <input type = "password" name = "password" id = "password"/>
-    <p><i>Forgot Password?</i></p>
+    <a href = "{{url_for('reset.reset_password_request')}}" style="text-decoration: none; color:cornflowerblue;"><i>Forgot Password?</i></a>
     <input type = "submit" value = "Login"/>
     <p style="justify-content: center;">OR</p>
     <div style="display: flex; justify-content: center;">
         <img src="{{ url_for('static', filename='google.svg') }}" alt="Google logo">
-        <a href = "{{url_for('google_login')}}"style = "padding-left: 1rem;">Login with Google</a>
+        <a href = "{{url_for('oauth.google_login')}}"style = "padding-left: 1rem;">Login with Google</a>
     </div>
     </form>
+</div>
+<div>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, msg in messages %}
+      <div class="alert alert-{{ category }}">{{ msg }}</div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
 </div>
 {% endblock %}
