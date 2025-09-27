@@ -82,3 +82,26 @@ def verify_email(token):
             return redirect(url_for("reset.reset_password"))
     flash("Verification failed.", "danger")
     return redirect(url_for("auth.login"))
+
+@auth_bp.route("/verify/otp", methods=["GET", "POST"])
+def verify_otp():
+    if request.method == "POST":
+        otp = request.form.get("otp")
+        user = User.query.filter_by(email=session.get("verify_email")).first()
+        if user:
+            if user.otp == otp:
+                flash("Email verified successfully!", "success")
+                return redirect(url_for("reset.reset_password"))
+            flash("Invalid OTP", "danger")
+        flash("User doesn't exist","danger")
+    return render_template("verify_otp.html")
+
+
+@auth_bp.route("/resend-otp", methods=["POST"])
+def resend_otp():
+    user = User.query.filter_by(email=session.get("email")).first()
+    if user:
+        send_verification_email(user.email)
+        flash("A new OTP has been sent to your email.", "info")
+    return redirect(url_for("auth.verify_otp"))
+
