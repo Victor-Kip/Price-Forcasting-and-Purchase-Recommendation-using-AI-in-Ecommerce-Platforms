@@ -10,4 +10,4 @@ def index():
 def dashboard():
     if "email" in session:
         return render_template("dashboard.html",email = session["email"])
-    return redirect(url_for("index"))
+    return redirect(url_for("main.index"))

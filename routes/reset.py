@@ -8,11 +8,11 @@ from extensions import db
 def reset_password_request():
     if request.method == "POST":
         email = request.form["email"] 
+        session["verify_email"] = email
         user = User.query.filter_by(email = email).first()
         if user: 
             send_reset_email(email) 
-            flash("If your email exists in our system, you’ll get a reset link.", "info") 
-            return redirect(url_for("auth.login")) 
+            return redirect(url_for("auth.verify_otp")) 
         else:
             flash("The email entered doesn't exist,please try again","warning")
             return redirect(url_for("reset.reset_password_request"))
@@ -22,7 +22,7 @@ def reset_password_request():
 @reset_bp.route("/resetpassword",methods = ["GET","POST"])
 def reset_password():
     if request.method == "POST":
-        email = session["email"]
+        email = session["verify_email"]
         new_password = request.form["new_password"]
         confirm_new_password = request.form["confirm_new_password"]
         user = User.query.filter_by(email = email).first()
@@ -35,6 +35,8 @@ def reset_password():
                 return redirect(url_for("reset.reset_password"))
             user.set_password(new_password)
             db.session.commit()
+            # Clear session email used for verification
+            session.pop("verify_email", None)
             flash("Your password has been reset successfully","success")
             return redirect(url_for("auth.login"))
         else:
