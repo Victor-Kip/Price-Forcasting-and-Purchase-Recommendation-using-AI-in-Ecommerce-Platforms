@@ -151,4 +151,181 @@ input[type=text] {
 }
 .register label, .login label {
   margin-right: auto;
+}
+
+.dashboard-wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 250px;
+  background: #7ed0f7;
+  color: #fff;
+  padding: 20px;
+  position: relative;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  transform: translateX(0);
+  transition: transform 0.3s ease;
+  z-index: 1000;
+}
+.sidebar a {
+  display: block;
+  color: #fff;
+  text-decoration: none;
+  padding: 10px;
+  margin: 5px 0;
+  border-radius: 4px;
+}
+.sidebar a:hover {
+  background: #34495e;
+}
+.sidebar .profile {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.sidebar-hidden {
+  transform: translateX(-100%);
+}
+
+/* Toggle buttons */
+.open-sidebar-btn,
+.close-sidebar-btn {
+  background: #2c3e50;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  font-size: 18px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.open-sidebar-btn {
+  position: absolute;
+  top: 50px;
+  left: 5px;
+  display: none; /* Hidden by default */
+  z-index: 900;
+  padding: 2px 7px;
+}
+
+.close-sidebar-btn {
+  position: absolute;
+  top: 3px;
+  left: 1px;
+  z-index: 10;
+  background: #2c3e50;
+  color: #fff;
+  border: none;
+  padding: 2px 7px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Show open button when sidebar is hidden */
+.sidebar-hidden ~ .main-content .open-sidebar-btn {
+  display: block;
+}
+
+.main-content {
+  flex: 1;
+  padding: 30px;
+  margin-top: -20px;
+  margin-left: 90px; /* Space for sidebar */
+  transition: margin-left 0.3s ease;
+  justify-content: center;
+}
+.main-content h2 {
+  margin-bottom: 1rem;
+}
+.main-content p {
+  padding-bottom: 1rem;
+}
+.main-content input {
+  margin-top: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.sidebar-hidden ~ .main-content {
+  margin-left: 0;
+}
+
+.results ul {
+  list-style: none;
+  padding: 0;
+}
+.results ul li {
+  margin: 8px 0;
+}
+.results ul span {
+  margin-left: 15px;
+  color: #2980b9;
+  cursor: pointer;
+}
+
+.recent-activity {
+  margin-top: 30px;
+}
+.recent-activity p {
+  height: 10px;
+  background: #eee;
+  margin: 5px 0;
+}
+
+.activity-cards {
+  display: flex;
+  gap: 15px;
+}
+.activity-cards .card {
+  width: 150px;
+  background: #fff;
+  padding: 10px;
+  border-radius: 6px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+.activity-cards .image {
+  background: #ccc;
+  height: 80px;
+  margin-bottom: 10px;
+}
+
+.search-bar h3 {
+  margin-top: 1rem;
+  padding: 0;
+}
+
+.profile {
+  display: flex;
+  align-items: center; /* vertically center image + text */
+  gap: 15px; /* spacing between image and text */
+  margin-bottom: 30px;
+}
+
+.profile img {
+  width: 90px;
+  height: 80px;
+  border-radius: 50%;
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column; /* stack username and account link */
+  align-items: flex-start; /* left align text */
+}
+
+.profile-info h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.profile-info p {
+  margin: 3px 0 0;
+  font-size: 0.9rem;
+  color: #f0f0f0; /* softer text color */
+  cursor: pointer;
 }/*# sourceMappingURL=styles.css.map */
