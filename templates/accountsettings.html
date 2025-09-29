@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="account-settings">
+  <h2>Account Settings</h2>
+  <form method="POST" action="{{ url_for('auth.account_settings') }}">
+    <div class="form-group">
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" value="{{ user.username }}" required>
+      
+    </div>
+
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" value="{{ user.email }}" required>
+    </div>
+
+    <div class="form-group">
+      <label>Profile Photo</label>
+      <input type="file" name="profile_image" accept="image/*">
+    </div>
+
+    <button type="submit" class="btn-save">Save Changes</button>
+  </form>
+
+  <hr>
+</div>
+{% endblock %}

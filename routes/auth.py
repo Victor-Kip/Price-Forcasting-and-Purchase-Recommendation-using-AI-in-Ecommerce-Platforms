@@ -105,3 +105,25 @@ def resend_otp():
         flash("A new OTP has been sent to your email.", "info")
     return redirect(url_for("auth.verify_otp"))
 
+@auth_bp.route("/accountsettings", methods=["GET", "POST"])
+def account_settings():
+    if "email" not in session:
+        flash("Please login to continue", "warning")
+        return redirect(url_for("auth.login"))
+
+    user = User.query.filter_by(email=session["email"]).first()
+
+    if request.method == "POST":
+        username = request.form.get("username")
+        email = request.form.get("email")
+
+        # update fields
+        user.Name = username
+        user.email = email
+        db.session.commit()
+        flash("Account updated successfully", "success")
+        return redirect(url_for("auth.account_settings"))
+
+    # for GET request → just show the page
+    return render_template("accountsettings.html", user=user)
+
