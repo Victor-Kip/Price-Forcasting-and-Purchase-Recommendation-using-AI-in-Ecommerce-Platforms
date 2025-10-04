@@ -381,4 +381,50 @@ input[type=text] {
 }
 .btn-save:hover {
   background: #1f6391;
+}
+
+.flash-container {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  width: auto;
+  z-index: 2000;
+}
+
+.flash-message {
+  padding: 12px 18px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  color: #fff;
+  font-weight: 500;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  animation: fadeOut 4s forwards;
+}
+
+/* Colors based on message category */
+.flash-message.success {
+  background-color: #2ecc71;
+} /* green */
+.flash-message.warning {
+  background-color: #f1c40f;
+  color: #333;
+} /* yellow */
+.flash-message.danger {
+  background-color: #e74c3c;
+} /* red */
+.flash-message.info {
+  background-color: #3498db;
+} /* blue */
+/* Fade-out animation */
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
 }/*# sourceMappingURL=styles.css.map */
