@@ -8,6 +8,8 @@ class User(db.Model):
     email = db.Column(db.String(50),unique = True,nullable = False)
     password_hash = db.Column(db.String(200))
     profile_image = db.Column(db.String(500)) 
+    is_verified = db.Column(db.Boolean, default=False)
+
     otp = db.Column(db.String(6),nullable = True)
 
     def set_password(self,password):

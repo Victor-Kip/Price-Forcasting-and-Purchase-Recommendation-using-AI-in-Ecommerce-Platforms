@@ -30,7 +30,7 @@ def register():
                 db.session.commit()
 
                 send_verification_email(email)
-                flash("Account created successfully! Please log in.", "success")
+                flash("Account created successfully! Please check your email to verify your account.", "success")
                 return redirect(url_for("auth.login"))
         else:
             flash("Passwords don't match!", "danger")
@@ -47,6 +47,9 @@ def login():
         user = User.query.filter_by(email=email).first()
 
         if user and user.check_password(password):
+            if not user.is_verified:
+                flash("Please verify your email before logging in.", "warning")
+                return redirect(url_for("auth.login"))
             session["email"] = email
             return redirect(url_for("main.dashboard")) 
         else:
@@ -66,23 +69,29 @@ def logout():
 # Email verification
 @auth_bp.route("/verify/<token>")
 def verify_email(token):
-    action = request.args.get("action")
-    try:
-        email = confirm_token(token)
-    except Exception:
+    action = request.args.get("action", "register")
+    email = confirm_token(token)
+    if not email:
         flash("Invalid or expired token", "danger")
         return redirect(url_for("auth.login"))
 
     user = User.query.filter_by(email=email).first()
-    if user:
-        if action == "register":
-            session["email"] = email
-            flash("Email verified successfully!", "success")
-            return redirect(url_for("main.dashboard"))
-        elif action == "reset":
-            session["email"] = email
-            return redirect(url_for("reset.reset_password"))
-    flash("Verification failed.", "danger")
+    if not user:
+        flash("No account found for this verification link.", "danger")
+        return redirect(url_for("auth.register"))
+    if action == "register":
+        if user.is_verified:
+            flash("Account already verified. Please login.", "info")
+            return redirect(url_for("auth.login"))
+        user.is_verified = True
+        db.session.commit()
+        flash("Email verified successfully! You can now log in", "success")
+        return redirect(url_for("auth.login"))
+    
+    elif action == "reset":
+        session["email"] = email
+        return redirect(url_for("reset.reset_password"))
+    flash("Unknown verification action.", "danger")
     return redirect(url_for("auth.login"))
 
 @auth_bp.route("/verify/otp", methods=["GET", "POST"])
