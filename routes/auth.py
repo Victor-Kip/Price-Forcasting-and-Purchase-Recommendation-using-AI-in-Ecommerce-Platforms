@@ -59,6 +59,8 @@ def login():
 @auth_bp.route("/logout")
 def logout():
     session.pop("email", None)
+    session.pop("username",None)
+    session.pop("profile_image",None)
     return redirect(url_for("main.index"))
 
 # Email verification

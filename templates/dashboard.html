@@ -5,9 +5,9 @@
   <div class="sidebar" id="sidebar">
         <button class="close-sidebar-btn" onclick="toggleSidebar()">✖</button>
     <div class="profile">
-  <img src="static/profile.png" alt="User Avatar">
+  <img src="{{session['profile_image'] or 'https://via.placeholder.com/80'}}" alt="profile_picture">
   <div class="profile-info">
-    <h3>{{email}}</h3>
+    <h3>{{session['username']}}</h3>
     <a href = "{{url_for('auth.account_settings')}}">account settings</a>
   </div>
 </div>
@@ -16,11 +16,12 @@
     <a href="#">🔍 Search Product</a>
     <a href="#">📈 Forecasts</a>
     <a href="#">⭐ Recommendations</a>
+    <a href="{{ url_for('auth.logout') }}" class="logout-btn">Log out</a>
   </div>
 
   <div class="main-content">
     <button class="open-sidebar-btn" onclick="toggleSidebar()">☰</button>
-    <h2>Welcome, {{email}}</h2>
+    <h2>Welcome, {{session['username']}}</h2>
     <p>Your last viewed product, product X - predicted price $$ next week</p>
 
     <div class="search-bar">

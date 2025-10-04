@@ -183,6 +183,19 @@ input[type=text] {
 .sidebar a:hover {
   background: #34495e;
 }
+.sidebar a.logout-btn {
+  width: 50%;
+  color: #c0392b;
+  padding: -1rem;
+  font-weight: bold;
+  justify-content: center;
+  margin-top: 2px;
+  transition: background 0.2s, color 0.2s;
+}
+.sidebar a.logout-btn:hover {
+  background: #c0392b;
+  color: #fff;
+}
 .sidebar .profile {
   text-align: center;
   margin-bottom: 30px;
