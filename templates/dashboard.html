@@ -5,7 +5,7 @@
   <div class="sidebar" id="sidebar">
         <button class="close-sidebar-btn" onclick="toggleSidebar()">✖</button>
     <div class="profile">
-  <img src="{{session['profile_image'] or 'https://via.placeholder.com/80'}}" alt="profile_picture">
+  <img src="{{ url_for('auth.user_image') }}" alt="Profile">
   <div class="profile-info">
     <h3>{{session['username']}}</h3>
     <a href = "{{url_for('auth.account_settings')}}">account settings</a>

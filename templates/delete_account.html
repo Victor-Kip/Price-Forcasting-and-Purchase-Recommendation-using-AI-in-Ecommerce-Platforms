@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="register">
+  <h2>Delete Account</h2>
+  <p>Enter your password to confirm account deletion. This action cannot be undone.</p>
+  <form method="POST">
+    <input type="password" name="password" placeholder="Enter your password" required>
+    <input type="submit" value="Delete Account" style="background:#c0392b; color:#fff;">
+  </form>
+</div>
+{% endblock %}

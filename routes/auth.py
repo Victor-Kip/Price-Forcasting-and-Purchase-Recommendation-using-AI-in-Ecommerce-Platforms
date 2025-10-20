@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session,Response
 from extensions import db
 from my_db_models import User
 from utils.token import confirm_token
@@ -51,6 +51,7 @@ def login():
                 flash("Please verify your email before logging in.", "warning")
                 return redirect(url_for("auth.login"))
             session["email"] = email
+            session["username"] = user.username
             return redirect(url_for("main.dashboard")) 
         else:
             flash("Invalid credentials given, try again", "danger")
@@ -126,15 +127,48 @@ def account_settings():
 
     if request.method == "POST":
         username = request.form.get("username")
-        email = request.form.get("email")
+        image = request.files.get("profile_image")
 
         # update fields
-        user.Name = username
-        user.email = email
+        user.username = username
+        if image and image.filename != "":
+            user.local_image = image.read()
+            user.image_mime = image.mimetype
+        
         db.session.commit()
         flash("Account updated successfully", "success")
         return redirect(url_for("auth.account_settings"))
-
-    # for GET request → just show the page
     return render_template("accountsettings.html", user=user)
 
+@auth_bp.route("/user_image")
+def user_image():
+    if "email" not in session:
+        return redirect(url_for("static", filename="default.png"))
+    user = User.query.filter_by(email=session["email"]).first()
+    if not user:
+        return redirect(url_for("static", filename="profile.png"))
+    if user.local_image:
+        return Response(user.local_image, mimetype=user.image_mime)
+    elif user.profile_image:
+        return redirect(user.profile_image)
+    else:
+        return redirect(url_for("static", filename="profile.png"))
+#delete account
+@auth_bp.route('/delete_account', methods=['GET', 'POST'])
+def delete_account():
+    if 'email' not in session:
+        flash('You must be logged in to delete your account.', 'danger')
+        return redirect(url_for('auth.login'))
+    user = User.query.filter_by(email=session['email']).first()
+    if request.method == 'POST':
+        password = request.form.get('password')
+        if user and user.check_password(password):
+            from extensions import db
+            db.session.delete(user)
+            db.session.commit()
+            session.clear()
+            flash('Your account has been deleted.', 'success')
+            return redirect(url_for('main.index'))
+        else:
+            flash('Incorrect password. Account not deleted.', 'danger')
+    return render_template('delete_account.html')
