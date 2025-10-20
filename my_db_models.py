@@ -7,7 +7,9 @@ class User(db.Model):
     username = db.Column(db.String(50))
     email = db.Column(db.String(50),unique = True,nullable = False)
     password_hash = db.Column(db.String(200))
-    profile_image = db.Column(db.String(500)) 
+    profile_image = db.Column(db.String(500))
+    local_image = db.Column(db.LargeBinary)  
+    image_mime = db.Column(db.String(50)) 
     is_verified = db.Column(db.Boolean, default=False)
 
     otp = db.Column(db.String(6),nullable = True)
