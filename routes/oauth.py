@@ -1,4 +1,4 @@
-from flask import Blueprint, session, redirect, url_for
+from flask import Blueprint, session, redirect, url_for,current_app
 from extensions import oauth
 from extensions import db
 from my_db_models import User
@@ -22,11 +22,11 @@ google = oauth.register(
 @oauth_bp.route("/login/google")
 def google_login():
     try:
-        redirect_url = url_for("authorize_google",_external = True)
+        redirect_url = url_for("oauth.authorize_google",_external = True)
         return google.authorize_redirect(redirect_url)
     except Exception as e:
-        oauth_bp.logger.error(f"An error occurred during login:{str(e)}")
-        return "Error during login",500
+        current_app.logger.error(f"An error occurred during login: {str(e)}")
+    return "Error during login", 500
 
 #google authorization
 @oauth_bp.route('/authorize/google')
@@ -35,13 +35,25 @@ def authorize_google():
     userinfo_endpoint = google.server_metadata["userinfo_endpoint"]
     resp = google.get(userinfo_endpoint)
     user_info = resp.json()
+
     email = user_info["email"]
+    name = user_info.get("name",email.split("@")[0])
+    picture = user_info.get("picture")
 
     user = User.query.filter_by(email = email).first()
+    #register new user
     if not user:
-        user = User(email = email)
+        user = User(email = email,username = name,profile_image = picture)
         db.session.add(user)
         db.session.commit()
-        session["email"] = email
-        session["oauth_token"] = token
-        return redirect(url_for("dashboard"))
+    else:
+        if not user.username:
+            user.username = name
+        if not user.profile_image and picture:
+            user.profile_image = picture
+        db.session.commit()
+    #store in session for dashboard
+    session["email"] = email
+    session["username"] = user.username
+    session["profile_image"] = user.profile_image
+    return redirect(url_for("main.dashboard"))

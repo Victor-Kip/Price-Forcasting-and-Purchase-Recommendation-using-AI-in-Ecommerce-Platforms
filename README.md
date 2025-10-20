@@ -1,2 +1,30 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/F63P1L7A)
-[![Open in Visual Studio Code](https://classroom.github.com/assets/open-in-vscode-2e0aaae1b6195c2367325f4f02e2d04e9abb55f0b24a779b69b11b9e10269abc.svg)](https://classroom.github.com/online_ide?assignment_repo_id=20100794&assignment_repo_type=AssignmentRepo)
+# GenEcomm – AI-Powered Price Forecasting and Purchase Recommendation
+
+GenEcomm is a web application that helps users make smarter shopping decisions by providing **future price forecasts** and **personalized product recommendations** for e-commerce platforms.
+
+## Features
+
+- 🔐 **User Authentication**
+
+  - Register, log in, and log out with secure password hashing
+  - Google OAuth login option
+  - Email verification and password reset (in progress)
+
+- 🛍️ **Core Functionality**
+
+  - Search for products
+  - View price forecasts using AI models
+  - Receive personalized recommendations
+
+- 📊 **Dashboard**
+  - Displays last viewed product and predictions
+  - Search bar for quick access
+  - Recent activity section
+
+## Tech Stack
+
+- **Backend**: Flask (Python)
+- **Frontend**: HTML, CSS, Jinja2 Templates
+- **Database**: SQLite with SQLAlchemy ORM
+- **Authentication**: Flask-Login, OAuth (Google)
+- **Email Service**: Flask-Mail (Gmail SMTP)

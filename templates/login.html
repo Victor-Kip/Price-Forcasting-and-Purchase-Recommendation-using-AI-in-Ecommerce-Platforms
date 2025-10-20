@@ -19,17 +19,10 @@
     <p style="justify-content: center;">OR</p>
     <div style="display: flex; justify-content: center;">
         <img src="{{ url_for('static', filename='google.svg') }}" alt="Google logo">
-        <a href = "{{url_for('oauth.google_login')}}"style = "padding-left: 1rem;">Login with Google</a>
+        <a href = "{{url_for('oauth.google_login')}}"style = "padding-left: 1rem;">Continue with Google</a>
     </div>
     </form>
 </div>
 <div>
-            {% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    {% for category, msg in messages %}
-      <div class="alert alert-{{ category }}">{{ msg }}</div>
-    {% endfor %}
-  {% endif %}
-{% endwith %}
 </div>
 {% endblock %}

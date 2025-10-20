@@ -1,5 +1,78 @@
 {% extends "base.html" %}
 {% block body %}
-<h1>Welcome {{email}}!</h1>
-<a href="{{url_for('auth.logout')}}" class="btn btn-logout">Logout</a>
+ <h1>GenEcomm</h1>
+<div class="dashboard-wrapper">
+  <div class="sidebar" id="sidebar">
+        <button class="close-sidebar-btn" onclick="toggleSidebar()">✖</button>
+    <div class="profile">
+  <img src="{{ url_for('auth.user_image') }}" alt="Profile">
+  <div class="profile-info">
+    <h3>{{session['username']}}</h3>
+    <a href = "{{url_for('auth.account_settings')}}">account settings</a>
+  </div>
+</div>
+
+    <a href="#">🏠 Dashboard</a>
+    <a href="#">🔍 Search Product</a>
+    <a href="#">📈 Forecasts</a>
+    <a href="#">⭐ Recommendations</a>
+    <a href="{{ url_for('auth.logout') }}" class="logout-btn">Log out</a>
+  </div>
+
+  <div class="main-content">
+    <button class="open-sidebar-btn" onclick="toggleSidebar()">☰</button>
+    <h2>Welcome, {{session['username']}}</h2>
+    <p>Your last viewed product, product X - predicted price $$ next week</p>
+
+    <div class="search-bar">
+      <h3>Search a new Product.</h3>
+      <input type="text" placeholder="Enter product name">
+      <button>Search</button>
+    </div>
+
+    <div class="results">
+      <h3>Results</h3>
+      <ul>
+        <li>Product A - $X <span>see forecast</span></li>
+        <li>Product B - $Y <span>see forecast</span></li>
+        <li>Product C - $Z <span>see forecast</span></li>
+      </ul>
+    </div>
+
+   <div class="recent-activity">
+      <h3>Recent Activity</h3>
+      <div class="activity-cards">
+        <div class="card">
+          <div class="image"></div>
+          <p></p>
+          <p></p>
+          <p></p>
+        </div>
+        <div class="card">
+          <div class="image"></div>
+          <p></p>
+          <p></p>
+          <p></p>
+        </div>
+        <div class="card">
+          <div class="image"></div>
+          <p></p>
+          <p></p>
+          <p></p>
+        </div>
+      </div>
+    </div>
+</div>
+<script>
+function toggleSidebar() {
+  var sidebar = document.getElementById('sidebar');
+  sidebar.classList.toggle('sidebar-hidden');
+  // Show open button only when sidebar is hidden
+  document.getElementById('openSidebarBtn').style.display = sidebar.classList.contains('sidebar-hidden') ? 'block' : 'none';
+}
+window.onload = function() {
+  // Hide open button initially
+  document.getElementById('openSidebarBtn').style.display = 'none';
+}
+</script>
 {% endblock %}
