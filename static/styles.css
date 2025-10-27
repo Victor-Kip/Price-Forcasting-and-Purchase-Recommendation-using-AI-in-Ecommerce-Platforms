@@ -248,7 +248,7 @@ input[type=text] {
   flex: 1;
   padding: 30px;
   margin-top: -20px;
-  margin-left: 90px; /* Space for sidebar */
+  margin-left: 50px; /* Space for sidebar */
   transition: margin-left 0.3s ease;
   justify-content: center;
 }

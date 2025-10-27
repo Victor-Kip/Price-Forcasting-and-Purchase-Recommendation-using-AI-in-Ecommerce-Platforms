@@ -26,6 +26,7 @@ except Exception as e:
 def predict():
     prediction, error = None, None
     product_name_input = ""
+    related_products = []
     if request.method == 'POST':
         product_name_input = request.form.get('product_name', '').strip()
         if not model or not scaler:
@@ -38,6 +39,15 @@ def predict():
                 if product_name_input.lower() == info.get('description', '').lower() or product_name_input.upper() == code.upper():
                     found = info
                     break
+            # Related products logic
+            if product_name_input:
+                first_word = product_name_input.split()[0].lower()
+                for code, info in PRODUCT_DATA.items():
+                    desc = info.get('description', '').lower()
+                    if desc.startswith(first_word) and (not found or desc != found.get('description', '').lower()):
+                        related_products.append(info)
+                        if len(related_products) >= 3:
+                            break
             if not found:
                 error = f'Product "{product_name_input}" not found.'
             else:
@@ -49,9 +59,9 @@ def predict():
                         arr = np.array(prices, dtype=float).reshape(-1, 1)
                         scaled = scaler.transform(arr)
                         pred = model.predict(scaled.reshape(1, TIME_STEP, 1))
-                        final =pred.reshape(-1, 1)
+                        final = pred.reshape(-1, 1)
                         prediction = [round(float(val), 2) for val in final.flatten()]
                     except Exception as e:
                         logging.error(f"Prediction error: {e}")
                         error = 'Prediction failed.'
-    return render_template('dashboard.html', prediction=prediction, error=error, TIME_STEP=TIME_STEP, product_name=product_name_input)
+    return render_template('dashboard.html', prediction=prediction, error=error, TIME_STEP=TIME_STEP, product_name=product_name_input, related_products=related_products)
