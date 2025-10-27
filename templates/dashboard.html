@@ -24,10 +24,30 @@
     <h2>Welcome, {{session['username']}}</h2>
     <p>Your last viewed product, product X - predicted price $$ next week</p>
 
+
     <div class="search-bar">
-      <h3>Search a new Product.</h3>
-      <input type="text" placeholder="Enter product name">
-      <button>Search</button>
+      <h3>Predict Future Price</h3>
+      <form id="predict-form" method="post" action="{{ url_for('predict.predict') }}">
+        <label for="product_name">Enter product name:</label>
+        <input type="text" name="product_name" id="product_name" placeholder="e.g. iPhone 14" required style="width:220px;">
+        <input type="submit" value="Predict" style="margin-left:10px;">
+      </form>
+      {% if prediction is defined %}
+        <div class="prediction-result">
+          <strong>Predicted Prices:</strong>
+          {% if prediction is not none and prediction|length > 1 %}
+            <ul style="margin:0; padding-left:1.2em;">
+              {% for p in prediction %}
+                <li>{{ p }}</li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            {{ prediction }}
+          {% endif %}
+        </div>
+      {% elif error is defined %}
+        <div class="prediction-error" style="color:#c0392b;">{{ error }}</div>
+      {% endif %}
     </div>
 
     <div class="results">

@@ -6,7 +6,7 @@ import os
 import logging
 
 
-TIME_STEP = 5
+TIME_STEP = 12
 
 # Use relative paths based on this file's directory
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -21,13 +21,13 @@ def load_artifacts():
     global model, scaler
     try:
         # load LSTM model
-        model = tf.keras.models.load_model(model_path)
-        logging.info("Successfully loaded LSTM model")
+           model = tf.keras.models.load_model(model_path)
+           print("Successfully loaded LSTM model")
         # load scaler
-        scaler = joblib.load(scaler_path)
-        logging.info("Successfully loaded scaler")
+           scaler = joblib.load(scaler_path)
+           print("Successfully loaded scaler")
     except Exception as e:
-        logging.error(f"Error loading artifacts: {e}")
+           print(f"Error loading artifacts: {e}")
 
 # Load model and scaler at import
 load_artifacts()
