@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Forecasts for {{ product_name }}</h1>
+<div class="forecast-wrapper">
+  <div class="forecast-content">
+    <div class="forecast-controls">
+        <a href="{{ url_for('main.dashboard') }}">&larr; Back to Dashboard</a>
+        {% if related_products %}
+            <form action="{{ url_for('predict.forecast_product', product_code=request.view_args['product_code']) }}" method="get" class="comparison-form">
+                <select name="compare_with">
+                    <option value="">Compare with...</option>
+                    {% for product in related_products %}
+                        <option value="{{ product.code }}">{{ product.description }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit">Compare</button>
+            </form>
+        {% endif %}
+    </div>
+    {% if comparison_name and comparison_prediction %}
+      <h3>Side-by-Side Forecast Comparison</h3>
+      <table style="width:100%;margin-top:1em;text-align:center;">
+        <thead>
+          <tr>
+            <th>Week</th>
+            <th>{{ product_name }}</th>
+            <th>{{ comparison_name }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p, c in zip(prediction, comparison_prediction) %}
+            <tr>
+              <td>{{ loop.index }}</td>
+              <td>${{ p }}</td>
+              <td>${{ c }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% elif prediction is defined and prediction is not none and prediction|length > 0 %}
+      <h3>Predicted Prices for the Next {{ prediction|length }} Weeks:</h3>
+      <ul>
+        {% for p in prediction %}
+          <li>Week {{ loop.index }}: ${{ p }}</li>
+        {% endfor %}
+      </ul>
+    {% elif error is defined and error %}
+      <p style="color:#c0392b;">{{ error }}</p>
+    {% else %}
+      <p>No forecast data available for this product.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

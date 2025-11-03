@@ -11,6 +11,7 @@ class User(db.Model):
     local_image = db.Column(db.LargeBinary)  
     image_mime = db.Column(db.String(50)) 
     is_verified = db.Column(db.Boolean, default=False)
+    last_searched_product = db.Column(db.String(50))
 
     otp = db.Column(db.String(6),nullable = True)
 
@@ -23,12 +24,16 @@ class User(db.Model):
 
 #products table
 class Product(db.Model):
-    ProductID = db.Column(db.Integer,primary_key = True)
-    Name = db.Column(db.String(100),nullable = False)
-    Category = db.Column(db.String(50))
-    Price = db.Column(db.Float,nullable = False)
+    ProductID = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(20), unique=True, nullable=False)  # e.g., "20724"
+    description = db.Column(db.String(200), nullable=False)
+    last_known_date = db.Column(db.String(20), nullable=True)  # or db.Date if you want strict date
+    prices = db.Column(db.Text, nullable=False)  # store as JSON string (list of floats)
+    # Optionally, add predicted_price if needed for ML
+    predicted_price = db.Column(db.Float, nullable=True)
+
     def __repr__(self):
-        return f"<Product {self.name}>"
+        return f"<Product {self.code} - {self.description}>"
 
 #price history table
 class PriceHistory(db.Model):

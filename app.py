@@ -16,11 +16,13 @@ def create_app():
     from routes.reset import reset_bp
     from routes.oauth import oauth_bp
     from routes.main import main_bp
+    from routes.predict import predict_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(reset_bp)
     app.register_blueprint(oauth_bp)
     app.register_blueprint(main_bp)
+    app.register_blueprint(predict_bp)
 
     with app.app_context():
         db.create_all()

@@ -22,20 +22,54 @@
   <div class="main-content">
     <button class="open-sidebar-btn" onclick="toggleSidebar()">☰</button>
     <h2>Welcome, {{session['username']}}</h2>
-    <p>Your last viewed product, product X - predicted price $$ next week</p>
+    {% if prediction is defined and prediction is not none and prediction|length > 0 and product_name %}
+      <p>Your last viewed product, {{ product_name }} - predicted price ${{ prediction[0] }} next week</p>
+    {% else %}
+      <p>No prediction data available yet.</p>
+    {% endif %}
+
 
     <div class="search-bar">
-      <h3>Search a new Product.</h3>
-      <input type="text" placeholder="Enter product name">
-      <button>Search</button>
+      <h3>Predict Future Price</h3>
+      <form id="predict-form" method="post" action="{{ url_for('predict.predict') }}">
+        <label for="product_name">Enter product name:</label>
+        <input type="text" name="product_name" id="product_name" placeholder="e.g. iPhone 14" required style="width:220px;">
+        <input type="submit" value="Predict" style="margin-left:10px;">
+      </form>
+      {% if prediction is defined %}
+        <div class="prediction-result">
+          <strong>Predicted Prices for {{product_name}}:</strong>
+          {% if prediction is not none and prediction|length > 1 %}
+            <ul style="margin:0; padding-left:1.2em;">
+              {% for p in prediction %}
+                {% if loop.index == 1 %}
+                  <li>Next week: ${{ p }}</li>
+                {% else %}
+                  <li>{{ loop.index }} weeks: ${{ p }}</li>
+                {% endif %}
+              {% endfor %}
+            </ul>
+          {% else %}
+            {{ prediction }}
+          {% endif %}
+        </div>
+      {% elif error is defined %}
+        <div class="prediction-error" style="color:#c0392b;">{{ error }}</div>
+      {% endif %}
     </div>
 
     <div class="results">
-      <h3>Results</h3>
+      <h3>Related Products</h3>
       <ul>
-        <li>Product A - $X <span>see forecast</span></li>
-        <li>Product B - $Y <span>see forecast</span></li>
-        <li>Product C - $Z <span>see forecast</span></li>
+        {% if product_name and related_products is defined and related_products|length > 0 %}
+          {% for prod in related_products[:3] %}
+            <li>{{ prod['description'] }} - ${{ prod['prices'][-1]|round(2) }}
+              <a href="{{ url_for('predict.forecast_product', product_code=prod['code']) }}"><span>see forecast</span></a>
+            </li>
+          {% endfor %}
+        {% else %}
+          <li>No related products found.</li>
+        {% endif %}
       </ul>
     </div>
 
