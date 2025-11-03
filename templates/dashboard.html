@@ -63,7 +63,9 @@
       <ul>
         {% if product_name and related_products is defined and related_products|length > 0 %}
           {% for prod in related_products[:3] %}
-            <li>{{ prod.description }} - ${{ prod.prices[-1]|round(2) }} <span>see forecast</span></li>
+            <li>{{ prod['description'] }} - ${{ prod['prices'][-1]|round(2) }}
+              <a href="{{ url_for('predict.forecast_product', product_code=prod['code']) }}"><span>see forecast</span></a>
+            </li>
           {% endfor %}
         {% else %}
           <li>No related products found.</li>
