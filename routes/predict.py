@@ -1,6 +1,8 @@
-from flask import Blueprint, request, render_template
+from flask import Blueprint, request, render_template, session
 import numpy as np
 import json, os, logging
+from my_db_models import User, Product
+from extensions import db
 
 predict_bp = Blueprint('predict', __name__, template_folder='../templates')
 MODEL_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'model')
@@ -61,6 +63,22 @@ def predict():
                         pred = model.predict(scaled.reshape(1, TIME_STEP, 1))
                         final = pred.reshape(-1, 1)
                         prediction = [round(float(val), 2) for val in final.flatten()]
+                        # --- DB update logic ---
+                        # Update User.last_searched_product
+                        user_email = session.get('email')
+                        if user_email:
+                            user = User.query.filter_by(email=user_email).first()
+                            if user:
+                                user.last_searched_product = product_name_input
+                                db.session.commit()
+                        # Update Product.predicted_price if not exists
+                        product_db = Product.query.filter_by(Name=found.get('description')).first()
+                        if not product_db:
+                            # Add product with predicted price
+                            new_product = Product(Name=found.get('description'), Price=prices[-1], predicted_price=prediction[0])
+                            db.session.add(new_product)
+                            db.session.commit()
+                        # If product exists, skip
                     except Exception as e:
                         logging.error(f"Prediction error: {e}")
                         error = 'Prediction failed.'
