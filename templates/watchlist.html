@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="container">
+    <h1>Your Watchlist</h1>
+    {% if products %}
+        <ul>
+        {% for product in products %}
+            <li>
+                <strong>{{ product.description }}</strong> (Code: {{ product.code }})
+                <form action="{{ url_for('watchlist.remove_from_watchlist', product_id=product.ProductID) }}" method="post" style="display:inline;">
+                    <button type="submit">Remove</button>
+                </form>
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>Your watchlist is empty.</p>
+    {% endif %}
+</div>
+{% endblock %}
