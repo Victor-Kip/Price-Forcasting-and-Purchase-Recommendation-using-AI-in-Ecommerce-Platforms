@@ -20,82 +20,124 @@
   </div>
 
   <div class="main-content">
-    <button class="open-sidebar-btn" onclick="toggleSidebar()">☰</button>
     <h2>Welcome, {{session['username']}}</h2>
     {% if prediction is defined and prediction is not none and prediction|length > 0 and product_name %}
       <p>Your last viewed product, {{ product_name }} - predicted price ${{ prediction[0] }} next week</p>
-    {% else %}
-      <p>No prediction data available yet.</p>
     {% endif %}
-
-
-    <div class="search-bar">
-      <h3>Predict Future Price</h3>
-      <form id="predict-form" method="post" action="{{ url_for('predict.predict') }}">
-        <label for="product_name">Enter product name:</label>
-        <input type="text" name="product_name" id="product_name" placeholder="e.g. iPhone 14" required style="width:220px;">
-        <input type="submit" value="Predict" style="margin-left:10px;">
-      </form>
-      {% if prediction is defined %}
-        <div class="prediction-result">
-          <strong>Predicted Prices for {{product_name}}:</strong>
-          {% if prediction is not none and prediction|length > 1 %}
-            <ul style="margin:0; padding-left:1.2em;">
-              {% for p in prediction %}
-                {% if loop.index == 1 %}
-                  <li>Next week: ${{ p }}</li>
-                {% else %}
-                  <li>{{ loop.index }} weeks: ${{ p }}</li>
-                {% endif %}
-              {% endfor %}
-            </ul>
+    <div class="all-products-section">
+      <h3>All Products</h3>
+      <div id="product-tabs" style="margin-bottom:1em;">
+        <button id="prev-tab" onclick="showPrevTab()" class="tab-btn">&#8592; Prev</button>
+        <button id="next-tab" onclick="showNextTab()" class="tab-btn">Next &#8594;</button>
+        <div id="product-groups">
+          {% if all_products_with_prices and all_products_with_prices|length > 0 %}
+            {% set num_groups = (all_products_with_prices|length // 6) + (1 if all_products_with_prices|length % 6 > 0 else 0) %}
+            {% for group_idx in range(num_groups) %}
+              <div class="product-group-grid{% if group_idx != 0 %} hidden-group{% endif %}">
+                {% for product in all_products_with_prices[group_idx*6:(group_idx+1)*6] %}
+                  <div class="product-card">
+                    <div class="product-header">
+                      <span class="product-title">{{ product.description }}</span>
+                      <span class="product-code">Code: {{ product.code }}</span>
+                    </div>
+                    <div class="product-details">
+                      {% if product.prices and product.prices|length > 0 %}
+                        <span class="product-price">Last price: ${{ product.prices[-1] | round(2) }}</span>
+                      {% endif %}
+                    </div>
+                    <div class="product-actions">
+                      <a href="{{ url_for('predict.forecast_product', product_code=product.code) }}" class="forecast-btn">See forecast</a>
+                      <form action="{{ url_for('watchlist.add_to_watchlist', product_id=product.ProductID) }}" method="post" style="display:inline;">
+                        <button type="submit" class="watchlist-btn">Add to Watchlist</button>
+                      </form>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            {% endfor %}
           {% else %}
-            {{ prediction }}
+            <div style="padding:1em;">No products found.</div>
           {% endif %}
-        </div>
-      {% elif error is defined %}
-        <div class="prediction-error" style="color:#c0392b;">{{ error }}</div>
-      {% endif %}
-    </div>
-
-    <div class="results">
-      <h3>Related Products</h3>
-      <ul>
-        {% if product_name and related_products is defined and related_products|length > 0 %}
-          {% for prod in related_products[:3] %}
-            <li>{{ prod['description'] }} - ${{ prod['prices'][-1]|round(2) }}
-              <a href="{{ url_for('predict.forecast_product', product_code=prod['code']) }}"><span>see forecast</span></a>
-            </li>
-          {% endfor %}
-        {% else %}
-          <li>No related products found.</li>
-        {% endif %}
-      </ul>
-    </div>
-
-   <div class="recent-activity">
-      <h3>Recent Activity</h3>
-      <div class="activity-cards">
-        <div class="card">
-          <div class="image"></div>
-          <p></p>
-          <p></p>
-          <p></p>
-        </div>
-        <div class="card">
-          <div class="image"></div>
-          <p></p>
-          <p></p>
-          <p></p>
-        </div>
-        <div class="card">
-          <div class="image"></div>
-          <p></p>
-          <p></p>
-          <p></p>
         </div>
       </div>
     </div>
+      <div class="related-watchlist-section">
+        <div class="results">
+          <h3>Related Products</h3>
+          <ul>
+            {% if product_name and related_products is defined and related_products|length > 0 %}
+              {% for prod in related_products[:3] %}
+                <li>{{ prod['description'] }} - ${{ prod['prices'][-1]|round(2) }}
+                  <a href="{{ url_for('predict.forecast_product', product_code=prod['code']) }}"><span>see forecast</span></a>
+                </li>
+              {% endfor %}
+            {% else %}
+              <li>No related products found.</li>
+            {% endif %}
+          </ul>
+        </div>
+
+        <div class="watchlist-section">
+          <h3>Your Watchlist</h3>
+          {% if watchlist and watchlist|length > 0 %}
+            <ul>
+            {% for product in watchlist %}
+              <li>
+                <strong>{{ product.description }}</strong> (Code: {{ product.code }})
+                <form action="{{ url_for('watchlist.remove_from_watchlist', product_id=product.ProductID) }}" method="post" style="display:inline;">
+                  <button type="submit">Remove</button>
+                </form>
+                <a href="{{ url_for('predict.forecast_product', product_code=product.code) }}">See forecast</a>
+              </li>
+            {% endfor %}
+            </ul>
+          {% else %}
+            <p>Your watchlist is empty.</p>
+          {% endif %}
+          <a href="{{ url_for('watchlist.view_watchlist') }}">View full watchlist</a>
+        </div>
+      </div>
+    <button class="open-sidebar-btn" onclick="toggleSidebar()">☰</button>
+    <!-- Move this block to the top, right after <h1>GenEcomm -->
+    <script>
+    function toggleSidebar() {
+      var sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('sidebar-hidden');
+      document.getElementById('openSidebarBtn').style.display = sidebar.classList.contains('sidebar-hidden') ? 'block' : 'none';
+    }
+    window.onload = function() {
+      document.getElementById('openSidebarBtn').style.display = 'none';
+    }
+
+    // Product tab navigation
+    let currentTab = 0;
+    function showTab(idx) {
+      const groups = document.querySelectorAll('.product-group-grid');
+      if (groups.length === 0) return;
+      groups.forEach((el, i) => {
+        if (i === idx) {
+          el.classList.remove('hidden-group');
+        } else {
+          el.classList.add('hidden-group');
+        }
+      });
+    }
+    function showPrevTab() {
+      const groups = document.querySelectorAll('.product-group-grid');
+      if (groups.length === 0) return;
+      currentTab = (currentTab - 1 + groups.length) % groups.length;
+      showTab(currentTab);
+    }
+    function showNextTab() {
+      const groups = document.querySelectorAll('.product-group-grid');
+      if (groups.length === 0) return;
+      currentTab = (currentTab + 1) % groups.length;
+      showTab(currentTab);
+    }
+    </script>
+    </div>
+
+  </div>
 </div>
 <script>
 function toggleSidebar() {

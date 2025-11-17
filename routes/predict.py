@@ -82,6 +82,7 @@ def forecast_product(product_code):
 
     # Related products logic
     related_products = []
+    historical_prices = []
     if product:
         first_word = product.description.split()[0].lower()
         related_products_db = Product.query.filter(
@@ -93,6 +94,10 @@ def forecast_product(product_code):
                 'description': prod.description,
                 'code': prod.code
             })
+        try:
+            historical_prices = json.loads(product.prices)
+        except Exception:
+            historical_prices = []
 
     comparison_name = None
     comparison_prediction = None
@@ -104,4 +109,4 @@ def forecast_product(product_code):
             comparison_prediction, _ = get_prediction(comp_product)
             comparison_name = comp_product.description
 
-    return render_template('forecasts.html', prediction=prediction, error=error, product_name=product_name, comparison_name=comparison_name, comparison_prediction=comparison_prediction, related_products=related_products, zip=zip)
+    return render_template('forecasts.html', prediction=prediction, error=error, product_name=product_name, comparison_name=comparison_name, comparison_prediction=comparison_prediction, related_products=related_products, historical_prices=historical_prices, zip=zip)

@@ -44,6 +44,76 @@
           <li>Week {{ loop.index }}: ${{ p }}</li>
         {% endfor %}
       </ul>
+        <div style="max-width:700px;margin:2em auto;">
+          <canvas id="priceChart"></canvas>
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+          // Data passed from backend
+          const historicalPrices = JSON.parse('{{ historical_prices|tojson|safe }}');
+          const forecastedPrices = JSON.parse('{{ prediction|tojson|safe }}');
+          const labels = [];
+          for (let i = 0; i < historicalPrices.length; i++) {
+            labels.push('Week ' + (i + 1));
+          }
+          for (let i = 0; i < forecastedPrices.length; i++) {
+            labels.push('Forecast ' + (i + 1));
+          }
+          const data = {
+            labels: labels,
+            datasets: [
+              {
+                label: 'Historical Prices',
+                data: historicalPrices,
+                borderColor: 'rgba(52, 152, 219, 1)',
+                backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                fill: false,
+                tension: 0.2,
+              },
+              {
+                label: 'Forecasted Prices',
+                data: Array(historicalPrices.length).fill(null).concat(forecastedPrices),
+                borderColor: 'rgba(39, 174, 96, 1)',
+                backgroundColor: 'rgba(39, 174, 96, 0.2)',
+                fill: false,
+                borderDash: [5, 5],
+                tension: 0.2,
+              }
+            ]
+          };
+          const config = {
+            type: 'line',
+            data: data,
+            options: {
+              responsive: true,
+              plugins: {
+                legend: {
+                  position: 'top',
+                },
+                title: {
+                  display: true,
+                  text: 'Price Trend & Forecast'
+                }
+              },
+              scales: {
+                y: {
+                  beginAtZero: false,
+                  title: {
+                    display: true,
+                    text: 'Price ($)'
+                  }
+                },
+                x: {
+                  title: {
+                    display: true,
+                    text: 'Week'
+                  }
+                }
+              }
+            },
+          };
+          new Chart(document.getElementById('priceChart'), config);
+        </script>
     {% elif error is defined and error %}
       <p style="color:#c0392b;">{{ error }}</p>
     {% else %}

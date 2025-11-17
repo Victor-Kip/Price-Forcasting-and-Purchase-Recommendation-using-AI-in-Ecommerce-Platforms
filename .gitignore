@@ -7,3 +7,5 @@ api_key.py
 routes/__pycache__/
 utils/__pycache__/
 model/product_price_data.json
+load_products.py
+product_price_data.json
