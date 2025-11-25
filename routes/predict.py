@@ -1,8 +1,10 @@
-from flask import Blueprint, request, render_template, session,redirect,url_for
+
+from flask import Blueprint, request, render_template, session, redirect, url_for
 import numpy as np
 import json, os, logging
-from my_db_models import User, Product
+from my_db_models import User, Product, SearchLog
 from extensions import db
+from utils.subscription import check_forecast_limit, increment_forecast_count
 
 predict_bp = Blueprint('predict', __name__, template_folder='../templates')
 TIME_STEP = 12
@@ -13,11 +15,12 @@ try:
 except Exception as e:
     logging.error(f"Model/scaler import error: {e}")
     model = scaler = None
+
 def get_prediction(product):
     if not product:
         return None, "Product not found."
     try:
-        prices = json.loads(product.prices)
+        prices = product.prices_list
         if not prices or len(prices) != TIME_STEP:
             return None, f'Incorrect price data length for "{product.description}".'
         arr = np.array(prices, dtype=float).reshape(-1, 1)
@@ -35,8 +38,20 @@ def predict():
     prediction, error = None, None
     product_name_input = ""
     related_products = []
+    
     if request.method == 'POST':
         product_name_input = request.form.get('product_name', '').strip()
+        
+        # Check subscription limit
+        user_email = session.get('email')
+        current_user_obj = None
+        if user_email:
+            current_user_obj = User.query.filter_by(email=user_email).first()
+            if current_user_obj:
+                if not check_forecast_limit(current_user_obj):
+                    error = f"Daily forecast limit reached for your {current_user_obj.subscription_tier} plan. Please upgrade."
+                    return render_template('dashboard.html', prediction=prediction, error=error, TIME_STEP=TIME_STEP, product_name=product_name_input, related_products=related_products)
+
         if not model or not scaler:
             error = "Model artifacts could not be loaded."
         elif not product_name_input:
@@ -56,28 +71,51 @@ def predict():
                 for prod in related_products_db:
                     related_products.append({
                         'description': prod.description,
-                        'prices': json.loads(prod.prices),
+                        'prices': prod.prices_list,
                         'code': prod.code
                     })
+                
                 prediction, error = get_prediction(product)
+                
                 if prediction:
+                    # Increment usage count if successful
+                    if current_user_obj:
+                        increment_forecast_count(current_user_obj)
+                        
                     # --- DB update logic ---
-                    user_email = session.get('email')
-                    if user_email:
-                        user = User.query.filter_by(email=user_email).first()
-                        if user:
-                            user.last_searched_product = product.description
-                            db.session.commit()
+                    if current_user_obj:
+                        current_user_obj.last_searched_product = product.description
+                        # Log the search
+                        search_log = SearchLog(user_id=current_user_obj.UserID, product_id=product.ProductID)
+                        db.session.add(search_log)
+                        
                     product.predicted_price = prediction[0]
                     db.session.commit()
             else:
                 error = f'Product "{product_name_input}" not found.'
+                
     return render_template('dashboard.html', prediction=prediction, error=error, TIME_STEP=TIME_STEP, product_name=product_name_input, related_products=related_products)
 
 @predict_bp.route('/forecast/<product_code>')
 def forecast_product(product_code):
+    # Check subscription limit
+    user_email = session.get('email')
+    current_user_obj = None
+    if user_email:
+        current_user_obj = User.query.filter_by(email=user_email).first()
+        if current_user_obj:
+            if not check_forecast_limit(current_user_obj):
+                # We need to handle this gracefully, maybe redirect to dashboard with error
+                # But since this is a GET request often linked, let's render the forecast page with an error
+                return render_template('forecasts.html', error=f"Daily forecast limit reached for your {current_user_obj.subscription_tier} plan. Please upgrade.", prediction=None, product_name=None, comparison_name=None, comparison_prediction=None, related_products=[], historical_prices=[], zip=zip)
+
     product = Product.query.filter_by(code=product_code).first()
     prediction, error = get_prediction(product)
+    
+    if prediction and not error:
+         if current_user_obj:
+            increment_forecast_count(current_user_obj)
+
     product_name = product.description if product else None
 
     # Related products logic
@@ -95,7 +133,7 @@ def forecast_product(product_code):
                 'code': prod.code
             })
         try:
-            historical_prices = json.loads(product.prices)
+            historical_prices = product.prices_list
         except Exception:
             historical_prices = []
 
