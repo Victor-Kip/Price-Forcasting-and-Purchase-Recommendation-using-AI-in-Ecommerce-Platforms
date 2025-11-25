@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="pricing-container" style="padding: 2em; text-align: center;">
+    <h1>Choose Your Plan</h1>
+    <p>Unlock more forecasts and insights with our premium plans.</p>
+    
+    <div class="pricing-grid" style="display: flex; justify-content: center; gap: 2em; margin-top: 2em; flex-wrap: wrap;">
+        <!-- Free Tier -->
+        <div class="pricing-card" style="border: 1px solid #ccc; border-radius: 8px; padding: 2em; width: 300px; background: #fff;">
+            <h2>Free</h2>
+            <p class="price" style="font-size: 1.5em; font-weight: bold;">$0/mo</p>
+            <ul style="list-style: none; padding: 0; margin: 1.5em 0;">
+                <li>5 Forecasts per day</li>
+                <li>Basic Recommendations</li>
+                <li>Community Support</li>
+            </ul>
+            <button disabled style="background: #ccc; color: #fff; border: none; padding: 0.8em 1.5em; border-radius: 4px; cursor: not-allowed;">Current Plan</button>
+        </div>
+
+        <!-- Pro Tier -->
+        <div class="pricing-card" style="border: 1px solid #007bff; border-radius: 8px; padding: 2em; width: 300px; background: #f8f9fa; transform: scale(1.05);">
+            <div style="background: #007bff; color: white; padding: 0.2em 0.5em; border-radius: 4px; display: inline-block; margin-bottom: 0.5em; font-size: 0.8em;">POPULAR</div>
+            <h2>Pro</h2>
+            <p class="price" style="font-size: 1.5em; font-weight: bold;">$9.99/mo</p>
+            <ul style="list-style: none; padding: 0; margin: 1.5em 0;">
+                <li>10 Forecasts per day</li>
+                <li>Advanced Recommendations</li>
+                <li>Priority Support</li>
+            </ul>
+            <form action="{{ url_for('subscription.create_checkout_session', tier='pro') }}" method="POST">
+                <button type="submit" style="background: #007bff; color: #fff; border: none; padding: 0.8em 1.5em; border-radius: 4px; cursor: pointer; width: 100%;">Upgrade to Pro</button>
+            </form>
+        </div>
+
+        <!-- Premium Tier -->
+        <div class="pricing-card" style="border: 1px solid #28a745; border-radius: 8px; padding: 2em; width: 300px; background: #fff;">
+            <h2>Premium</h2>
+            <p class="price" style="font-size: 1.5em; font-weight: bold;">$19.99/mo</p>
+            <ul style="list-style: none; padding: 0; margin: 1.5em 0;">
+                <li>Unlimited Forecasts</li>
+                <li>All Features Unlocked</li>
+                <li>24/7 Dedicated Support</li>
+            </ul>
+            <form action="{{ url_for('subscription.create_checkout_session', tier='premium') }}" method="POST">
+                <button type="submit" style="background: #28a745; color: #fff; border: none; padding: 0.8em 1.5em; border-radius: 4px; cursor: pointer; width: 100%;">Go Premium</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -52,6 +52,7 @@ def login():
                 return redirect(url_for("auth.login"))
             session["email"] = email
             session["username"] = user.username
+            session["UserID"] = user.UserID
             return redirect(url_for("main.dashboard")) 
         else:
             flash("Invalid credentials given, try again", "danger")

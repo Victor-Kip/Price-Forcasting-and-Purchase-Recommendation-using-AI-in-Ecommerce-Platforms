@@ -1,3 +1,4 @@
+
 from extensions import db
 from werkzeug.security import generate_password_hash,check_password_hash
 
@@ -67,3 +68,15 @@ class Recommendation(db.Model):
 
     def __repr__(self):
         return f"<Recommendation User:{self.user_id} Product:{self.product_id}>"
+    
+# watchlist table
+class Watchlist(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.UserID'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.ProductID'), nullable=False)
+    added_at = db.Column(db.DateTime, server_default=db.func.now())
+    user = db.relationship('User', backref='watchlist_items')
+    product = db.relationship('Product', backref='watchlisted_by')
+
+    def __repr__(self):
+        return f"<Watchlist User:{self.user_id} Product:{self.product_id}>"
