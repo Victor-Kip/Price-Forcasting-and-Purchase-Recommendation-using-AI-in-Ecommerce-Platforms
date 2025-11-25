@@ -14,7 +14,7 @@
 </div>
 
     <div class="usage-stats" style="padding: 0 1em; margin-bottom: 1em; color: #ccc; font-size: 0.9em;">
-        <p>Forecasts: {{ current_user.forecast_count }} / 
+        <p>Forecasts: {{ current_user.forecast_count or 0 }} / 
             {% if current_user.subscription_tier == 'pro' %}10
             {% elif current_user.subscription_tier == 'premium' %}∞
             {% else %}5{% endif %}

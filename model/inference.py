@@ -31,3 +31,21 @@ def load_artifacts():
 
 # Load model and scaler at import
 load_artifacts()
+
+def get_prediction(prices_list, description="Unknown Product"):
+    if not model or not scaler:
+        return None, "Model artifacts not loaded."
+        
+    try:
+        if not prices_list or len(prices_list) != TIME_STEP:
+            return None, f'Incorrect price data length for "{description}".'
+            
+        arr = np.array(prices_list, dtype=float).reshape(-1, 1)
+        scaled = scaler.transform(arr)
+        pred = model.predict(scaled.reshape(1, TIME_STEP, 1), verbose=0)
+        final = pred.reshape(-1, 1)
+        prediction = [round(float(val), 2) for val in final.flatten()]
+        return prediction, None
+    except Exception as e:
+        logging.error(f"Prediction error for {description}: {e}")
+        return None, "Prediction failed."

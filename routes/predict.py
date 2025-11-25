@@ -1,8 +1,9 @@
 
-from flask import Blueprint, request, render_template, session, redirect, url_for
+from flask import Blueprint, request, render_template, redirect, url_for
 import numpy as np
 import json, os, logging
 from my_db_models import User, Product, SearchLog
+from flask_login import current_user, login_required
 from extensions import db
 from utils.subscription import check_forecast_limit, increment_forecast_count
 
@@ -11,27 +12,12 @@ TIME_STEP = 12
 PREDICTION_HORIZON = 5
 
 try:
-    from model.inference import model, scaler
+    from model.inference import get_prediction, model, scaler
 except Exception as e:
     logging.error(f"Model/scaler import error: {e}")
     model = scaler = None
-
-def get_prediction(product):
-    if not product:
-        return None, "Product not found."
-    try:
-        prices = product.prices_list
-        if not prices or len(prices) != TIME_STEP:
-            return None, f'Incorrect price data length for "{product.description}".'
-        arr = np.array(prices, dtype=float).reshape(-1, 1)
-        scaled = scaler.transform(arr)
-        pred = model.predict(scaled.reshape(1, TIME_STEP, 1))
-        final = pred.reshape(-1, 1)
-        prediction = [round(float(val), 2) for val in final.flatten()]
-        return prediction, None
-    except Exception as e:
-        logging.error(f"Prediction error for {product.description}: {e}")
-        return None, "Prediction failed."
+    # Define a dummy get_prediction if import fails
+    def get_prediction(prices, desc): return None, "Model not loaded"
 
 @predict_bp.route('/predict', methods=['POST', 'GET'])
 def predict():
@@ -75,12 +61,16 @@ def predict():
                         'code': prod.code
                     })
                 
-                prediction, error = get_prediction(product)
+                prediction, error = get_prediction(product.prices_list, product.description)
                 
                 if prediction:
                     # Increment usage count if successful
                     if current_user_obj:
-                        increment_forecast_count(current_user_obj)
+                        # Re-fetch user to ensure it's attached to the session
+                        current_user_obj = User.query.get(current_user_obj.UserID)
+                        if current_user_obj.forecast_count is None:
+                            current_user_obj.forecast_count = 0
+                        current_user_obj.forecast_count += 1
                         
                     # --- DB update logic ---
                     if current_user_obj:
@@ -97,24 +87,30 @@ def predict():
     return render_template('dashboard.html', prediction=prediction, error=error, TIME_STEP=TIME_STEP, product_name=product_name_input, related_products=related_products)
 
 @predict_bp.route('/forecast/<product_code>')
+@login_required
 def forecast_product(product_code):
-    # Check subscription limit
-    user_email = session.get('email')
-    current_user_obj = None
-    if user_email:
-        current_user_obj = User.query.filter_by(email=user_email).first()
-        if current_user_obj:
-            if not check_forecast_limit(current_user_obj):
-                # We need to handle this gracefully, maybe redirect to dashboard with error
-                # But since this is a GET request often linked, let's render the forecast page with an error
-                return render_template('forecasts.html', error=f"Daily forecast limit reached for your {current_user_obj.subscription_tier} plan. Please upgrade.", prediction=None, product_name=None, comparison_name=None, comparison_prediction=None, related_products=[], historical_prices=[], zip=zip)
+
+    print(f"[DEBUG] Entered forecast_product for product_code={product_code}")
+    print(f"[DEBUG] current_user: {current_user}")
+    if not current_user.is_authenticated:
+        print("[DEBUG] User not authenticated, redirecting to login.")
+        return redirect(url_for('auth.login'))
+    if not check_forecast_limit(current_user):
+        print(f"[DEBUG] Forecast limit reached for user {current_user.email}")
+        return render_template('forecasts.html', error=f"Daily forecast limit reached for your {current_user.subscription_tier} plan. Please upgrade.", prediction=None, product_name=None, comparison_name=None, comparison_prediction=None, related_products=[], historical_prices=[], zip=zip)
 
     product = Product.query.filter_by(code=product_code).first()
-    prediction, error = get_prediction(product)
-    
+    print(f"[DEBUG] product: {product}")
+    prediction, error = None, "Product not found"
+    if product:
+        prediction, error = get_prediction(product.prices_list, product.description)
+        print(f"[DEBUG] prediction: {prediction}, error: {error}")
+
     if prediction and not error:
-         if current_user_obj:
-            increment_forecast_count(current_user_obj)
+        from utils.subscription import increment_forecast_count
+        # Use the utility to increment and handle date logic
+        increment_forecast_count(current_user)
+        print(f"[DEBUG] User {current_user.email} forecast_count incremented to: {current_user.forecast_count}")
 
     product_name = product.description if product else None
 
@@ -144,7 +140,7 @@ def forecast_product(product_code):
     if compare_with_code:
         comp_product = Product.query.filter_by(code=compare_with_code).first()
         if comp_product and comp_product.code != product_code:
-            comparison_prediction, _ = get_prediction(comp_product)
+            comparison_prediction, _ = get_prediction(comp_product.prices_list, comp_product.description)
             comparison_name = comp_product.description
 
     return render_template('forecasts.html', prediction=prediction, error=error, product_name=product_name, comparison_name=comparison_name, comparison_prediction=comparison_prediction, related_products=related_products, historical_prices=historical_prices, zip=zip)
