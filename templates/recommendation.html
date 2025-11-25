@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block body %}
+<h1 style="text-align: center;">Purchase Recommendations</h1>
+<div class="recommendation-section">
+  <h2>Top Products with Expected Price Drops</h2>
+  {% if recommendations and recommendations|length > 0 %}
+    <ul>
+      {% for rec in recommendations %}
+        <li>
+          <strong>{{ rec.description }}</strong> (Code: {{ rec.code }})<br>
+          Last Price: ${{ rec.last_price | round(2) }}<br>
+          Forecasted Price: ${{ rec.forecasted_price | round(2) }}<br>
+          Expected Drop: ${{ rec.price_drop | round(2) }}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No recommendations available at this time.</p>
+  {% endif %}
+</div>
+{% endblock %}

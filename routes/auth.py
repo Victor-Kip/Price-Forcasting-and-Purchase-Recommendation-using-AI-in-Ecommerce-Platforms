@@ -1,4 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session,Response
+from datetime import datetime
+from flask_login import login_user, logout_user, login_required, current_user
 from extensions import db
 from my_db_models import User
 from utils.token import confirm_token
@@ -30,8 +32,13 @@ def register():
                 db.session.commit()
 
                 send_verification_email(email)
-                flash("Account created successfully! Please check your email to verify your account.", "success")
-                return redirect(url_for("auth.login"))
+                
+                # Set session variables for OTP verification
+                session["verify_email"] = email
+                session["verification_purpose"] = "register"
+                
+                flash("Account created successfully! Please check your email for the OTP.", "success")
+                return redirect(url_for("auth.verify_otp"))
         else:
             flash("Passwords don't match!", "danger")
             return redirect(url_for("auth.register"))
@@ -49,10 +56,14 @@ def login():
         if user and user.check_password(password):
             if not user.is_verified:
                 flash("Please verify your email before logging in.", "warning")
-                return redirect(url_for("auth.login"))
-            session["email"] = email
-            session["username"] = user.username
-            session["UserID"] = user.UserID
+                # Allow them to verify if they haven't yet
+                session["verify_email"] = email
+                session["verification_purpose"] = "register"
+                return redirect(url_for("auth.verify_otp"))
+                
+            login_user(user)
+            user.last_login = datetime.utcnow()
+            db.session.commit()
             return redirect(url_for("main.dashboard")) 
         else:
             flash("Invalid credentials given, try again", "danger")
@@ -62,10 +73,9 @@ def login():
 
 # Logout
 @auth_bp.route("/logout")
+@login_required
 def logout():
-    session.pop("email", None)
-    session.pop("username",None)
-    session.pop("profile_image",None)
+    logout_user()
     return redirect(url_for("main.index"))
 
 # Email verification
@@ -100,74 +110,96 @@ def verify_email(token):
 def verify_otp():
     if request.method == "POST":
         otp = request.form.get("otp")
-        user = User.query.filter_by(email=session.get("verify_email")).first()
+        email = session.get("verify_email")
+        
+        if not email:
+            flash("Session expired. Please try again.", "danger")
+            return redirect(url_for("auth.login"))
+
+        user = User.query.filter_by(email=email).first()
         if user:
             if user.otp == otp:
-                flash("Email verified successfully!", "success")
-                return redirect(url_for("reset.reset_password"))
+                # Clear OTP after successful use to prevent reuse
+                user.otp = None 
+                
+                purpose = session.get("verification_purpose")
+                
+                if purpose == "register":
+                    user.is_verified = True
+                    db.session.commit()
+                    session.pop("verify_email", None)
+                    session.pop("verification_purpose", None)
+                    flash("Email verified successfully! Please login.", "success")
+                    return redirect(url_for("auth.login"))
+                
+                elif purpose == "reset":
+                    db.session.commit() # Save the cleared OTP
+                    # Don't pop verify_email yet, reset_password needs it (or we pass it differently)
+                    # Looking at reset.py, it uses session["verify_email"]
+                    flash("Email verified successfully!", "success")
+                    return redirect(url_for("reset.reset_password"))
+                
+                else:
+                    # Fallback
+                    user.is_verified = True
+                    db.session.commit()
+                    flash("Verified!", "success")
+                    return redirect(url_for("auth.login"))
+
             flash("Invalid OTP", "danger")
-        flash("User doesn't exist","danger")
+        else:
+            flash("User doesn't exist","danger")
     return render_template("verify_otp.html")
 
 
 @auth_bp.route("/resend-otp", methods=["POST"])
 def resend_otp():
-    user = User.query.filter_by(email=session.get("email")).first()
-    if user:
-        send_verification_email(user.email)
+    email = session.get("verify_email")
+    if email:
+        send_verification_email(email)
         flash("A new OTP has been sent to your email.", "info")
+    else:
+        flash("Session expired. Please try again.", "danger")
+        return redirect(url_for("auth.login"))
     return redirect(url_for("auth.verify_otp"))
 
 @auth_bp.route("/accountsettings", methods=["GET", "POST"])
+@login_required
 def account_settings():
-    if "email" not in session:
-        flash("Please login to continue", "warning")
-        return redirect(url_for("auth.login"))
-
-    user = User.query.filter_by(email=session["email"]).first()
-
     if request.method == "POST":
         username = request.form.get("username")
         image = request.files.get("profile_image")
 
         # update fields
-        user.username = username
+        current_user.username = username
         if image and image.filename != "":
-            user.local_image = image.read()
-            user.image_mime = image.mimetype
+            current_user.local_image = image.read()
+            current_user.image_mime = image.mimetype
         
         db.session.commit()
         flash("Account updated successfully", "success")
         return redirect(url_for("auth.account_settings"))
-    return render_template("accountsettings.html", user=user)
+    return render_template("accountsettings.html", user=current_user)
 
 @auth_bp.route("/user_image")
+@login_required
 def user_image():
-    if "email" not in session:
-        return redirect(url_for("static", filename="default.png"))
-    user = User.query.filter_by(email=session["email"]).first()
-    if not user:
-        return redirect(url_for("static", filename="profile.png"))
-    if user.local_image:
-        return Response(user.local_image, mimetype=user.image_mime)
-    elif user.profile_image:
-        return redirect(user.profile_image)
+    if current_user.local_image:
+        return Response(current_user.local_image, mimetype=current_user.image_mime)
+    elif current_user.profile_image:
+        return redirect(current_user.profile_image)
     else:
         return redirect(url_for("static", filename="profile.png"))
 #delete account
 @auth_bp.route('/delete_account', methods=['GET', 'POST'])
+@login_required
 def delete_account():
-    if 'email' not in session:
-        flash('You must be logged in to delete your account.', 'danger')
-        return redirect(url_for('auth.login'))
-    user = User.query.filter_by(email=session['email']).first()
     if request.method == 'POST':
         password = request.form.get('password')
-        if user and user.check_password(password):
-            from extensions import db
-            db.session.delete(user)
+        if current_user.check_password(password):
+            db.session.delete(current_user)
             db.session.commit()
-            session.clear()
+            logout_user()
             flash('Your account has been deleted.', 'success')
             return redirect(url_for('main.index'))
         else:

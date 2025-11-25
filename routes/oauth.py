@@ -1,15 +1,16 @@
+import os
 from flask import Blueprint, session, redirect, url_for,current_app
+from flask_login import login_user
 from extensions import oauth
 from extensions import db
 from my_db_models import User
 oauth_bp = Blueprint("oauth", __name__)
 
-from api_key import *
 #configure oauth
 google = oauth.register(
     name="google",
-    client_id = CLIENT_ID,
-    client_secret = CLIENT_SECRET,
+    client_id = os.getenv("CLIENT_ID"),
+    client_secret = os.getenv("CLIENT_SECRET"),
     access_token_url="https://oauth2.googleapis.com/token",
     authorize_url="https://accounts.google.com/o/oauth2/auth",
     api_base_url="https://www.googleapis.com/oauth2/v1/",
@@ -55,8 +56,7 @@ def authorize_google():
         if not user.profile_image and picture:
             user.profile_image = picture
         db.session.commit()
-    # Store in session for dashboard
-    session["email"] = email
-    session["username"] = user.username
-    session["profile_image"] = user.profile_image
+    
+    # Log in user
+    login_user(user)
     return redirect(url_for("main.dashboard"))

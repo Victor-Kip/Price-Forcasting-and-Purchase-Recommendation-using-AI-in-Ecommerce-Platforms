@@ -12,12 +12,12 @@ def reset_password_request():
         user = User.query.filter_by(email = email).first()
         if user: 
             send_reset_email(email) 
+            session["verification_purpose"] = "reset"
             return redirect(url_for("auth.verify_otp")) 
         else:
             flash("The email entered doesn't exist,please try again","warning")
             return redirect(url_for("reset.reset_password_request"))
     return render_template("resetpasswordrequest.html")
-
 #rest password page
 @reset_bp.route("/resetpassword",methods = ["GET","POST"])
 def reset_password():

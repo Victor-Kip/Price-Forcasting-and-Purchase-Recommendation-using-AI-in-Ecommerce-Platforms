@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Admin Dashboard</h1>
+<div class="dashboard-wrapper">
+    <div class="sidebar" id="sidebar">
+        <button class="close-sidebar-btn" onclick="toggleSidebar()">✖</button>
+        <div class="profile">
+            <img src="{{ url_for('auth.user_image') }}" alt="Profile">
+            <div class="profile-info">
+                <h3>{{ current_user.username or current_user.email.split('@')[0] }}</h3>
+                <span class="badge admin" style="background-color: #ff4757; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.8em;">ADMIN</span>
+                <a href="{{url_for('auth.account_settings')}}">account settings</a>
+            </div>
+        </div>
+        <a href="{{ url_for('main.dashboard') }}">🏠 User Dashboard</a>
+        <a href="{{ url_for('admin.dashboard') }}">📊 Admin Stats</a>
+        <a href="{{ url_for('auth.logout') }}" class="logout-btn">Log out</a>
+    </div>
+
+    <div class="main-content">
+        <h2>App Statistics</h2>
+        
+        <div class="stats-container" style="display: flex; gap: 2em; flex-wrap: wrap;">
+            <div class="stat-box" style="flex: 1; min-width: 300px; background: #fff; padding: 1em; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                <h3>Most Searched Products</h3>
+                {% if most_searched %}
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid #eee;">
+                                <th style="text-align: left; padding: 0.5em;">Product</th>
+                                <th style="text-align: right; padding: 0.5em;">Searches</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product_name, count in most_searched %}
+                                <tr style="border-bottom: 1px solid #f9f9f9;">
+                                    <td style="padding: 0.5em;">{{ product_name }}</td>
+                                    <td style="text-align: right; padding: 0.5em;">{{ count }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p>No search data available.</p>
+                {% endif %}
+            </div>
+
+            <div class="stat-box" style="flex: 1; min-width: 300px; background: #fff; padding: 1em; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                <h3>Most Active Users</h3>
+                {% if most_active_users %}
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid #eee;">
+                                <th style="text-align: left; padding: 0.5em;">User</th>
+                                <th style="text-align: right; padding: 0.5em;">Forecasts</th>
+                                <th style="text-align: right; padding: 0.5em;">Last Login</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in most_active_users %}
+                                <tr style="border-bottom: 1px solid #f9f9f9;">
+                                    <td style="padding: 0.5em;">{{ user.username or user.email }}</td>
+                                    <td style="text-align: right; padding: 0.5em;">{{ user.forecast_count }}</td>
+                                    <td style="text-align: right; padding: 0.5em;">{{ user.last_login.strftime('%Y-%m-%d') if user.last_login else 'N/A' }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p>No user activity data available.</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <button class="open-sidebar-btn" id="openSidebarBtn" onclick="toggleSidebar()">☰</button>
+    </div>
+</div>
+
+<script>
+function toggleSidebar() {
+  var sidebar = document.getElementById('sidebar');
+  sidebar.classList.toggle('sidebar-hidden');
+  var btn = document.getElementById('openSidebarBtn');
+  if(btn) btn.style.display = sidebar.classList.contains('sidebar-hidden') ? 'block' : 'none';
+}
+window.onload = function() {
+    var btn = document.getElementById('openSidebarBtn');
+    if(btn) btn.style.display = 'none';
+}
+</script>
+{% endblock %}

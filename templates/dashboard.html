@@ -7,24 +7,40 @@
     <div class="profile">
   <img src="{{ url_for('auth.user_image') }}" alt="Profile">
   <div class="profile-info">
-    <h3>{{session['username']}}</h3>
+    <h3>{{ current_user.username or current_user.email.split('@')[0] }}</h3>
+    <span class="badge {{ current_user.subscription_tier or 'free' }}">{{ (current_user.subscription_tier or 'free')|upper }}</span>
     <a href = "{{url_for('auth.account_settings')}}">account settings</a>
   </div>
 </div>
 
+    <div class="usage-stats" style="padding: 0 1em; margin-bottom: 1em; color: #ccc; font-size: 0.9em;">
+        <p>Forecasts: {{ current_user.forecast_count }} / 
+            {% if current_user.subscription_tier == 'pro' %}10
+            {% elif current_user.subscription_tier == 'premium' %}∞
+            {% else %}5{% endif %}
+        </p>
+        {% if current_user.subscription_tier != 'premium' %}
+            <a href="{{ url_for('subscription.pricing') }}" style="color: #4CAF50; text-decoration: none; font-weight: bold;">Upgrade Plan</a>
+        {% endif %}
+    </div>
+
     <a href="#">🏠 Dashboard</a>
     <a href="#">🔍 Search Product</a>
     <a href="#">📈 Forecasts</a>
-    <a href="#">⭐ Recommendations</a>
+  <a href="{{ url_for('recommendation.recommendation') }}">⭐ Recommendations</a>
     <a href="{{ url_for('auth.logout') }}" class="logout-btn">Log out</a>
   </div>
 
   <div class="main-content">
-    <h2>Welcome, {{session['username']}}</h2>
+    <h2>Welcome, {{ current_user.username or current_user.email.split('@')[0] }}</h2>
     {% if prediction is defined and prediction is not none and prediction|length > 0 and product_name %}
       <p>Your last viewed product, {{ product_name }} - predicted price ${{ prediction[0] }} next week</p>
     {% endif %}
     <div class="all-products-section">
+      <form action="{{ url_for('main.search_products') }}" method="get" style="margin-bottom: 1.2em; display: flex; gap: 0.7em; align-items: center;">
+        <input type="text" name="query" placeholder="Search products..." style="padding: 0.5em; border-radius: 6px; border: 1px solid #ccc; width: 240px;">
+        <button type="submit" class="forecast-btn">Search</button>
+      </form>
       <h3>All Products</h3>
       <div id="product-tabs" style="margin-bottom:1em;">
         <button id="prev-tab" onclick="showPrevTab()" class="tab-btn">&#8592; Prev</button>
@@ -37,8 +53,10 @@
                 {% for product in all_products_with_prices[group_idx*6:(group_idx+1)*6] %}
                   <div class="product-card">
                     <div class="product-header">
-                      <span class="product-title">{{ product.description }}</span>
-                      <span class="product-code">Code: {{ product.code }}</span>
+                      <a href="{{ url_for('main.product_details', product_code=product.code) }}" style="text-decoration:none; color:inherit;">
+                        <span class="product-title">{{ product.description }}</span>
+                        <span class="product-code">Code: {{ product.code }}</span>
+                      </a>
                     </div>
                     <div class="product-details">
                       {% if product.prices and product.prices|length > 0 %}
