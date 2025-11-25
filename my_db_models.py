@@ -1,9 +1,10 @@
-
 from extensions import db
 from werkzeug.security import generate_password_hash,check_password_hash
+from flask_login import UserMixin
+from datetime import datetime
 
 #users tables
-class User(db.Model):
+class User(UserMixin, db.Model):
     UserID = db.Column(db.Integer,primary_key = True)
     username = db.Column(db.String(50))
     email = db.Column(db.String(50),unique = True,nullable = False)
@@ -16,10 +17,25 @@ class User(db.Model):
 
     otp = db.Column(db.String(6),nullable = True)
 
+    # Subscription fields
+    subscription_tier = db.Column(db.String(20), default='free')  # free, pro, premium
+    forecast_count = db.Column(db.Integer, default=0)
+    last_forecast_date = db.Column(db.Date, nullable=True)
+    stripe_customer_id = db.Column(db.String(100), nullable=True)
+    stripe_subscription_id = db.Column(db.String(100), nullable=True)
+    
+    # Admin and Activity fields
+    is_admin = db.Column(db.Boolean, default=False)
+    last_login = db.Column(db.DateTime, nullable=True)
+
     def set_password(self,password):
         self.password_hash = generate_password_hash(password)
     def check_password(self,password):
         return check_password_hash(self.password_hash,password)
+    
+    def get_id(self):
+        return str(self.UserID)
+
     def __repr__(self):
         return f"<User {self.email}>"
 
@@ -29,9 +45,14 @@ class Product(db.Model):
     code = db.Column(db.String(20), unique=True, nullable=False)  # e.g., "20724"
     description = db.Column(db.String(200), nullable=False)
     last_known_date = db.Column(db.String(20), nullable=True)  # or db.Date if you want strict date
-    prices = db.Column(db.Text, nullable=False)  # store as JSON string (list of floats)
+    # prices = db.Column(db.Text, nullable=False)  # store as JSON string (list of floats) - DEPRECATED
     # Optionally, add predicted_price if needed for ML
     predicted_price = db.Column(db.Float, nullable=True)
+
+    @property
+    def prices_list(self):
+        # Return prices sorted by date
+        return [ph.price for ph in sorted(self.price_history, key=lambda x: x.date)]
 
     def __repr__(self):
         return f"<Product {self.code} - {self.description}>"
@@ -80,3 +101,16 @@ class Watchlist(db.Model):
 
     def __repr__(self):
         return f"<Watchlist User:{self.user_id} Product:{self.product_id}>"
+
+# Search Log Table
+class SearchLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.UserID'), nullable=True) # Nullable for anonymous searches if needed, but we mostly track logged in
+    product_id = db.Column(db.Integer, db.ForeignKey('product.ProductID'), nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    user = db.relationship('User', backref='search_logs')
+    product = db.relationship('Product', backref='search_logs')
+
+    def __repr__(self):
+        return f"<SearchLog User:{self.user_id} Product:{self.product_id}>"
