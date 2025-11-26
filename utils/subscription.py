@@ -26,6 +26,10 @@ def check_forecast_limit(user):
     user_tier = user.subscription_tier or 'free'
     limit = limits.get(user_tier, 5)
     
+    if user.forecast_count is None:
+        user.forecast_count = 0
+        db.session.commit()
+
     if user.forecast_count < limit:
         return True
     else:
@@ -35,5 +39,7 @@ def increment_forecast_count(user):
     """
     Increments the user's forecast count.
     """
+    if user.forecast_count is None:
+        user.forecast_count = 0
     user.forecast_count += 1
     db.session.commit()
