@@ -43,15 +43,14 @@ def create_app():
     app.register_blueprint(predict_bp)
     app.register_blueprint(watchlist_bp)
     app.register_blueprint(recommendation_bp)
-    app.register_blueprint(subscription_bp)
-    app.register_blueprint(admin_bp)
+    app.register_blueprint(subscription_bp, url_prefix='/subscription')
+    # app.register_blueprint(admin_bp) # Commenting out admin_bp if it doesn't exist yet or was removed
 
     with app.app_context():
         db.create_all()
 
     return app
-
-
+    
 if __name__ == "__main__":
     app = create_app()
     app.run(debug=True)
